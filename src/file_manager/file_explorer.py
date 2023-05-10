@@ -1,60 +1,108 @@
 """
 Содержит класс FileExplorer, который отображает дерево файловой системы.
+
+Класс FileExplorer наследуется от QTabWidget, чтобы позволить создавать 
+несколько вкладок в одном окне. Каждая вкладка содержит свое дерево 
+файловой системы.
+
+Метод initUI() создает две вкладки, каждая из которых создается с помощью 
+метода createTab(). Метод createTab() создает модель QStandardItemModel 
+и связывает ее с виджетом QTreeView. 
+
+Затем он добавляет обработчики событий expanded и doubleClicked, 
+чтобы реагировать на раскрытие узла и двойной щелчок на файле или папке.
+
+Методы onExpanded() и onDoubleClicked() обновляют содержимое дерева в соответствии 
+с выбранным путем. Если выбранный путь является папкой, метод onDoubleClicked() очищает
 """
 
-import os
+from PyQt6.QtCore import QDir, QModelIndex, Qt
+from PyQt6.QtGui import QStandardItemModel, QStandardItem
 from PyQt6.QtWidgets import (
-    QApplication,
-    QMainWindow,
     QTreeView,
-    QFileSystemModel,
-    QVBoxLayout,
+    QTabWidget,
     QWidget,
+    QVBoxLayout,
+    QHBoxLayout,
+    QLabel,
+    QApplication,
 )
+import sys
 
 
-class FileExplorer(QWidget):
-    def __init__(self, parent=None):
-        super().__init__(parent)
+class FileExplorer(QTabWidget):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("File Explorer")
+        self.treeviews = []
+        self.initUI()
 
-        # Создаем модель файловой системы
-        self.model = QFileSystemModel()
-        self.model.setRootPath("")
+    def initUI(self):
+        self.addTab(self.createTab(), "Tab 1")
+        self.addTab(self.createTab(), "Tab 2")
 
-        # Создаем виджеты дерева и устанавливаем модель
-        self.tree = QTreeView()
-        self.tree.setModel(self.model)
+    def createTab(self):
+        model = QStandardItemModel()
+        model.setRootPath(QDir.rootPath())
 
-        # Устанавливаем корневой каталог
-        self.tree.setRootIndex(self.model.index(""))
+        treeview = QTreeView()
+        treeview.setModel(model)
+        treeview.setRootIndex(model.index(QDir.rootPath()))
+        treeview.setHeaderHidden(True)
 
-        # Создаем вертикальный макет и добавляем в него дерево
-        layout = QVBoxLayout()
-        layout.addWidget(self.tree)
+        treeview.expanded.connect(self.onExpanded)
+        treeview.doubleClicked.connect(self.onDoubleClicked)
 
-        # Устанавливаем макет
-        self.setLayout(layout)
+        self.treeviews.append(treeview)
 
+        vbox = QVBoxLayout()
+        vbox.addWidget(treeview)
 
-class FileManager(QMainWindow):
-    def __init__(self, parent=None):
-        super().__init__(parent)
-        self.setWindowTitle("File Manager")
+        label = QLabel("Selected file: ")
+        vbox.addWidget(label)
 
-        # Создаем экземпляр FileExplorer
-        self.file_explorer = FileExplorer()
+        widget = QWidget()
+        widget.setLayout(vbox)
 
-        # Устанавливаем центральный виджет
-        self.setCentralWidget(self.file_explorer)
+        return widget
 
-        # Устанавливаем размер окна
-        self.setGeometry(100, 100, 800, 600)
+    def onExpanded(self, index: QModelIndex):
+        model = index.model()
+        path = model.filePath(index)
+
+        if model.rowCount(index) == 0:
+            for info in QDir(path).entryInfoList(
+                QDir.Files | QDir.Directories | QDir.NoDotAndDotDot
+            ):
+                item = QStandardItem(info.fileName())
+                item.setIcon(self.style().standardIcon(QTreeView.iconsVisible()))
+                item.setData(info.filePath(), Qt.UserRole)
+                model.appendRow(item)
+
+    def onDoubleClicked(self, index: QModelIndex):
+        model = index.model()
+        path = model.filePath(index)
+
+        if QDir(path).exists():
+            model.removeRows(0, model.rowCount())
+
+            for info in QDir(path).entryInfoList(
+                QDir.Files | QDir.Directories | QDir.NoDotAndDotDot
+            ):
+                item = QStandardItem(info.fileName())
+                item.setIcon(self.style().standardIcon(QTreeView.iconsVisible()))
+                item.setData(info.filePath(), Qt.UserRole)
+                model.appendRow(item)
+        else:
+            widget = self.currentWidget()
+            label = widget.findChild(QLabel)
+
+            if label is not None:
+                label.setText(f"Selected file: {path}")
 
 
 if __name__ == "__main__":
-    import sys
-
     app = QApplication(sys.argv)
-    file_manager = FileManager()
-    file_manager.show()
+    file_explorer = FileExplorer()
+    file_explorer.show()
     sys.exit(app.exec())
