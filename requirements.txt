@@ -1,2 +1,2 @@
-PyQT6
+PyQT6==6.5.0
 pytest-shutil==1.7.0

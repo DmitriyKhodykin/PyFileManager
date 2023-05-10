@@ -1,31 +1,40 @@
 """
-Содержит класс FileExplorer, который отображает дерево файловой системы.
+Contains a FileExplorer class that displays the file system tree.
 
-Класс FileExplorer наследуется от QTabWidget, чтобы позволить создавать 
-несколько вкладок в одном окне. Каждая вкладка содержит свое дерево 
-файловой системы.
+The FileExplorer class inherits from QTabWidget to allow you 
+to create multiple tabs in one window. 
+Each tab contains a different file system tree.
 
-Метод initUI() создает две вкладки, каждая из которых создается с помощью 
-метода createTab(). Метод createTab() создает модель QStandardItemModel 
-и связывает ее с виджетом QTreeView. 
+The initUI() method creates two tabs, each of which is created using 
+the createTab() method. The createTab() method creates a QStandardItemModel 
+and connects it to the QTreeView widget. 
 
-Затем он добавляет обработчики событий expanded и doubleClicked, 
-чтобы реагировать на раскрытие узла и двойной щелчок на файле или папке.
+It then adds the expanded and doubleClicked event handlers to respond 
+to an expanded node and a double-clicked file or folder.
 
-Методы onExpanded() и onDoubleClicked() обновляют содержимое дерева в соответствии 
-с выбранным путем. Если выбранный путь является папкой, метод onDoubleClicked() очищает
+The onExpanded() and onDoubleClicked() methods update the contents of 
+the tree according to the selected path. If the selected path is a folder, 
+the onDoubleClicked() method clears.
 """
 
-from PyQt6.QtCore import QDir, QModelIndex, Qt
-from PyQt6.QtGui import QStandardItemModel, QStandardItem
+from PyQt6.QtCore import (
+    QDir,                  # Provides access to directory structures and their contents.
+    QModelIndex,           # Is used to locate data in a data model.
+    Qt                     # 
+)
+from PyQt6.QtGui import (
+    QFileSystemModel,      # Provides a data model for the local filesystem.
+    QStandardItemModel,    # Provides a generic model for storing custom data.
+    QStandardItem          # Provides an item for use with the QStandardItemModel class.
+)
 from PyQt6.QtWidgets import (
-    QTreeView,
-    QTabWidget,
-    QWidget,
-    QVBoxLayout,
-    QHBoxLayout,
-    QLabel,
-    QApplication,
+    QTreeView,             # Provides a default model/view implementation of a tree view.
+    QTabWidget,            # Provides a stack of tabbed widgets.
+    QWidget,               # Is the base class of all user interface objects.
+    QVBoxLayout,           # Lines up widgets vertically.
+    QHBoxLayout,           # Lines up widgets horizontally.
+    QLabel,                # Provides a text or image display.
+    QApplication,          #
 )
 import sys
 
@@ -42,7 +51,8 @@ class FileExplorer(QTabWidget):
         self.addTab(self.createTab(), "Tab 2")
 
     def createTab(self):
-        model = QStandardItemModel()
+        # model = QStandardItemModel()
+        model = QFileSystemModel()
         model.setRootPath(QDir.rootPath())
 
         treeview = QTreeView()
