@@ -16,6 +16,7 @@ from PyQt6.QtGui import (
 )
 from PyQt6.QtWidgets import (
     QTreeView,             # Provides a default model/view implementation of a tree view.
+    QListView,             # 
     QTabWidget,            # Provides a stack of tabbed widgets.
     QWidget,               # Is the base class of all user interface objects.
     QVBoxLayout,           # Lines up widgets vertically.
@@ -33,6 +34,7 @@ class FileExplorer(QMainWindow):
         super().__init__()
 
         self.setWindowTitle("Просмотр файлов")
+        self.showMaximized()
         
         # Creating a File System Model
         model = QFileSystemModel()
