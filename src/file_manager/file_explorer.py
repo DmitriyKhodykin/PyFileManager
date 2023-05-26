@@ -7,7 +7,7 @@ from PyQt6.QtCore import (
     QDir,                  # Provides access to directory structures and their contents.
     QModelIndex,           # Is used to locate data in a data model.
     Qt,                    #
-    QSize,
+    QSize,                 #
 )
 from PyQt6.QtGui import (
     QFileSystemModel,      # Provides a data model for the local filesystem.
@@ -24,7 +24,8 @@ from PyQt6.QtWidgets import (
     QLabel,                # Provides a text or image display.
     QApplication,          #
     QMainWindow,           #
-    QSplitter,
+    QSplitter,             #
+    QPushButton,           #
 )
 import sys
 
@@ -34,32 +35,40 @@ class FileExplorer(QMainWindow):
         super().__init__()
 
         self.setWindowTitle("Просмотр файлов")
-        self.showMaximized()
-        
-        # Creating a File System Model
+        # self.showMaximized()
+
+        hbox_layout = QHBoxLayout()
+        vbox_layout = QVBoxLayout()
+
+        button = QPushButton(self)
+
+        for b in range(15):
+            button = QPushButton(self)
+            vbox_layout.addWidget(button)
+
+        hbox_layout.addLayout(vbox_layout)
+
         model = QFileSystemModel()
         model.setRootPath(QDir.rootPath())
-        
-        # Create two tree widgets to display the file system
+
         tree_view1 = QTreeView(self)
         tree_view2 = QTreeView(self)
-        
+
         for view in [tree_view1, tree_view2]:
             view.setModel(model)
             view.setRootIndex(model.index(''))
             view.setSortingEnabled(True)
             view.setColumnWidth(0, 250)
             view.setIconSize(QSize(50, 50))
-       
-        # Create a separator between the windows
-        splitter = QSplitter(Qt.Orientation.Horizontal, self)
-        splitter.addWidget(tree_view1)
-        splitter.addWidget(tree_view2)
-        splitter.setStretchFactor(0, 1)
-        splitter.setStretchFactor(1, 1)
+            hbox_layout.addWidget(view)
+
+        widget = QWidget()
+        widget.setLayout(hbox_layout)
+
+        self.setCentralWidget(widget)
         
-        # Set up the main window
-        self.setCentralWidget(splitter)
+    def handle_new_button_clicked(self):
+        print("New button clicked")
 
 
 if __name__ == "__main__":
